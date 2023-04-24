@@ -5,29 +5,33 @@ const { svgPath, outPath, outType } = require('./config.json')
 
 
 function save(fileName) {
-    fs.readFile(`./${svgPath}/${fileName}.svg`, 'utf8', function (error, data) {
-        if (error) {
-            console.error(error);
-            return;
-        }
-
-        // Convert the SVG data to PNG
-        svg2img(data, function (error, buffer) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(`./${svgPath}/${fileName}.svg`, 'utf8', function (error, data) {
             if (error) {
                 console.error(error);
                 return;
             }
-            const pathName = `./${outPath}/${fileName}.${outType}`;
-            // Write the buffer data to a file
-            fs.writeFile(pathName, buffer, function (error) {
+            // Convert the SVG data to PNG
+            svg2img(data, function (error, buffer) {
                 if (error) {
                     console.error(error);
                     return;
                 }
-                console.log(`Image saved as ${pathName}`);
+                const pathName = `./${outPath}/${fileName}.${outType}`;
+                // Write the buffer data to a file
+                fs.writeFile(pathName, buffer, function (error) {
+                    if (error) {
+                        console.error(error);
+                        return;
+                    }
+                    console.log(`Image saved as ${pathName}`);
+                    resolve()
+                });
             });
         });
-    });
+
+    })
+
 }
 
 function readSvgFile() {
@@ -49,9 +53,12 @@ function readSvgFile() {
 }
 
 readSvgFile().then(svgFiles => {
-    svgFiles.forEach(svgFile => {
-        save(svgFile.replace('.svg', ''))
+    const length = svgFiles.length
+    svgFiles.forEach(async (svgFile, index) => {
+        await save(svgFile.replace('.svg', ''))
+        if (index == length - 1) {
+            console.log(`\r\n图片转换完成,请进入 ${outPath} 目录查看`);
+        }
     })
-
 })
 
