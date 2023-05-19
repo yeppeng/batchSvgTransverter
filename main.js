@@ -53,12 +53,11 @@ function readSvgFile() {
 }
 
 readSvgFile().then(svgFiles => {
-    const length = svgFiles.length
-    svgFiles.forEach(async (svgFile, index) => {
-        await save(svgFile.replace('.svg', ''))
-        if (index == length - 1) {
-            console.log(`\r\n图片转换完成,请进入 ${outPath} 目录查看`);
-        }
+    const tasks = svgFiles.map((svgFile, index) => {
+        return save(svgFile.replace('.svg', ''))
     })
+    Promise.all(tasks).then(() =>
+        console.log(`\r\n图片转换完成,请进入 ${outPath} 目录查看`)
+    )
 })
 
